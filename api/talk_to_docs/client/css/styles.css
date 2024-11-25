@@ -1,0 +1,92 @@
+body {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+button,
+input::file-selector-button {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: large;
+    background-color: #438afe;
+    border-radius: 15%;
+    border: 1px solid black;
+    color: white;
+    box-shadow: 2px 2px 5px gray;
+}
+
+button:hover,
+input::file-selector-button:hover {
+    background-color: #118afe;
+}
+
+button:active,
+input::file-selector-button:active {
+    background-color: #116afe;
+}
+
+input::file-selector-button {
+    margin-right: 10%;
+    border-top: none;
+    border-bottom: none;
+}
+
+input[type="text"] {
+    padding: 8px;
+}
+
+input[type="file"] {
+    font-size: large;
+    border: 1px solid black;
+    border-left: none;
+    border-top-left-radius: 12%;
+    border-bottom-left-radius: 12%;
+}
+
+.center {
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+    align-items: center;
+    margin: auto;
+    margin-top: 10%;
+    gap: 8px;
+}
+
+#auth-form {
+    border: 2px solid black;
+    width: fit-content;
+    padding: 2%;
+    border-radius: 5%;
+    box-shadow: 5px 5px 5px rgb(197, 197, 197);
+}
+
+#upload-form {
+    border: 2px solid black;
+    width: fit-content;
+    padding: 2%;
+    border-radius: 2%;
+    box-shadow: 5px 5px 5px rgb(197, 197, 197);
+}
+
+#upload-form > h1 {
+    margin-bottom: 0%;
+}
+
+#api-token {
+    width: 80%;
+    text-align: center;
+    font-weight: 600;
+    background-color: aliceblue;
+}
+
+#upload {
+    display: flex;
+    gap: 2%;
+}
+
+#comp {
+    width: 100%;
+    margin-bottom: 5%;
+}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="./css/styles.css" />
+        <title>Upload Docs</title>
+    </head>
+    <body>
+        <div class="center" id="upload-form">
+            <h1>Upload Your Documents</h1>
+            <div id="comp">
+                <p style="font-weight: 600">Compatible documents:</p>
+                <p>.pdf, .odx, .odt, .txt</p>
+            </div>
+            <div id="upload">
+                <input id="file-upload" type="file" multiple />
+                <button onclick="uploadFiles(event)">Upload</button>
+            </div>
+            <p id="feedback"></p>
+        </div>
+
+        <script src="./js/upload.js"></script>
+    </body>
+</html>
