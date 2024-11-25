@@ -33,7 +33,7 @@ class FAISSConnector():
                           "chunks": [],
                           "indices": []}
 
-    async def insert_data(self, data):
+    def insert_data(self, data):
         logging.info("Inserting embeddings...")
         embeddings = np.array(data['embeddings']).astype('float32')
         self.index.add(embeddings)
@@ -45,14 +45,14 @@ class FAISSConnector():
             self.data_dict['indices'].append(self.next_index)
             self.next_index += 1
 
-    async def search(self, query_embedding, n_results):
+    def search(self, query_embedding, n_results):
         logging.info(f"Performing vector search...")
         query_vector = np.array(query_embedding).reshape(1, -1).astype('float32')
         distances, indices = self.index.search(query_vector, n_results)
         return distances, indices
 
 
-async def get_envs():
+def get_envs():
     # Get LM & EM model variables
     embedding_model = os.getenv('EmbeddingModel', 'nomic-embed-text-v1.5')
     language_model = os.getenv('LanguageModel', 'Phi-3-mini-4k-instruct.Q4_0.gguf')
@@ -128,7 +128,7 @@ async def get_envs():
     return envs
 
 
-async def parse_pdf(document):
+def parse_pdf(document):
     reader = PdfReader(document)
     full_text = ''
     for page in reader.pages:
@@ -136,7 +136,7 @@ async def parse_pdf(document):
     return full_text
 
 
-async def parse_docx(document):
+def parse_docx(document):
     doc = Document(document)
     full_text = ''
     for paragraph in doc.paragraphs:
@@ -144,7 +144,7 @@ async def parse_docx(document):
     return full_text
 
 
-async def parse_odt(document): 
+def parse_odt(document): 
     doc = load(document)
     full_text = ''
     for paragraph in doc.getElementsByType(P):
@@ -152,13 +152,13 @@ async def parse_odt(document):
     return full_text
 
 
-async def parse_txt_csv(document):
+def parse_txt_csv(document):
     document.seek(0)
     full_text = document.read().decode('utf-8')
     return full_text
 
 
-async def parse_xlsx(document):
+def parse_xlsx(document):
     wb = openpyxl.load_workbook(document)
     sheet = wb.active
     full_text = ""
@@ -167,22 +167,22 @@ async def parse_xlsx(document):
     return full_text
 
 
-async def process_document(file_data, suffix, name=''):
+def process_document(file_data, suffix, name=''):
     """ Function to gather and process relevant data from document """
     # Parse the file, extract text and metadata
     logging.info(f"Parsing document...")
     try:
         # Using FileStorage object to process file from memory instead of storage
         if suffix == ".pdf":
-            text = await parse_pdf(file_data) 
+            text = parse_pdf(file_data) 
         elif suffix == ".docx":
-            text = await parse_docx(file_data)
+            text = parse_docx(file_data)
         elif suffix == ".odt":
-            text = await parse_odt(file_data)
+            text = parse_odt(file_data)
         elif suffix in {".txt", ".csv"}:
-            text = await parse_txt_csv(file_data)
+            text = parse_txt_csv(file_data)
         elif suffix == ".xlsx":
-            text = await parse_xlsx(file_data)
+            text = parse_xlsx(file_data)
         else:
             raise Exception
     except:
@@ -226,7 +226,7 @@ async def process_document(file_data, suffix, name=''):
     return processed_data
 
 
-async def download_models(models, model_storage):
+def download_models(models, model_storage):
     try:
         logging.info("Downloading language model...")
         lm_path = f"/app/api/talk_to_docs/models/{models['language_model']}"
@@ -255,7 +255,7 @@ async def download_models(models, model_storage):
         return False
 
 
-async def embed_query(query, model):
+def embed_query(query, model):
     try:
         logging.info("Embedding query...")
         output = embed.text(
@@ -271,7 +271,7 @@ async def embed_query(query, model):
         return None
     
 
-async def embed_document(data, model):
+def embed_document(data, model):
     try:
         embeddings = []
         logging.info("Creating embeddings for text chunks...")
@@ -292,17 +292,17 @@ async def embed_document(data, model):
         return None
 
 
-async def initialize_vector_db(models):
+def initialize_vector_db(models):
     try:
         # Get the dimentionality settings of embedding model
-        dim = len(await embed_query("sample", models['embedding_model']))
+        dim = len(embed_query("sample", models['embedding_model']))
         return FAISSConnector(dim)
     except Exception as e:
         logging.error(f"Failed to initiate vector database: {e}")
         return None
     
 
-async def download_and_process_docs(doc_storage, models, db):
+def download_and_process_docs(doc_storage, models, db):
     try:
         service_client = BlobServiceClient(
             account_url=f"https://{doc_storage['docs_storage_account']}.blob.core.windows.net",
@@ -322,11 +322,11 @@ async def download_and_process_docs(doc_storage, models, db):
                 logging.info(f"File {blob} is an incompatible format.")
                 continue
 
-            processed_doc = await process_document(BytesIO(blob_data), suffix, blob)
-            embeddings = await embed_document(processed_doc['chunks'], models['embedding_model'])
+            processed_doc = process_document(BytesIO(blob_data), suffix, blob)
+            embeddings = embed_document(processed_doc['chunks'], models['embedding_model'])
             processed_doc['embeddings'] = embeddings
 
-            await db.insert_data(processed_doc)
+            db.insert_data(processed_doc)
             n_docs += 1
         logging.info(f"Successfully downloaded and embedded {n_docs} documents.")
         return True
@@ -335,7 +335,7 @@ async def download_and_process_docs(doc_storage, models, db):
         return False
 
 
-async def query_llm(model, model_settings, query, references):
+def query_llm(model, model_settings, query, references):
     try:
         logging.info("Prompting language model...")
         model_path = '/app/api/talk_to_docs/models/'
@@ -357,15 +357,15 @@ async def query_llm(model, model_settings, query, references):
         return None
 
 
-async def handle_upload():
+def handle_upload():
     logging.info("UPLOAD HANDLER")
     return
 
-async def handle_query(channel_id, query, db, envs):
+def handle_query(channel_id, query, db, envs):
     try:
         logging.info(f"Incoming query: channel_id: {channel_id} message: {query}")
-        query_embedding = await embed_query(query, envs['models']['embedding_model'])
-        _, indices = await db.search(query_embedding, 2)
+        query_embedding = embed_query(query, envs['models']['embedding_model'])
+        _, indices = db.search(query_embedding, 2)
 
         ref_chunks = ''
         n = 1
@@ -374,7 +374,7 @@ async def handle_query(channel_id, query, db, envs):
                 ref_chunks += f"#{n} - {db.data_dict['chunks'][idx]} \n\n"
                 n += 1
 
-        res = await query_llm(envs['models']['language_model'], envs['model_settings'], query, ref_chunks)
+        res = query_llm(envs['models']['language_model'], envs['model_settings'], query, ref_chunks)
 
         logging.info(f"Language Model Response: {res}")
         return {"answer": res,
@@ -394,13 +394,13 @@ async def handle_query(channel_id, query, db, envs):
                 "card_data": None}
 
 
-async def initialize():
+def initialize():
     try:
         logging.info("Initializing...")
-        envs = await get_envs()
-        db = await initialize_vector_db(envs['models'])
-        await download_models(envs['models'], envs['models_storage'])
-        await download_and_process_docs(envs['doc_storage'], envs['models'], db)
+        envs = get_envs()
+        db = initialize_vector_db(envs['models'])
+        download_models(envs['models'], envs['models_storage'])
+        download_and_process_docs(envs['doc_storage'], envs['models'], db)
         logging.info("Initialization successful")
         return db, envs
     except Exception as e:

@@ -56,13 +56,9 @@ def upload_handler():
 
 @app.route("/query", methods=['POST'])
 def query_handler():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
     if request.is_json:
-        nlsql_answer: NLSQLAnswer = loop.run_until_complete(handle_query(request.json.get('channel_id', ''),    
-                                                                         request.json.get('text', ''), db, envs))
-        loop.close()
+        nlsql_answer: NLSQLAnswer = handle_query(request.json.get('channel_id', ''),    
+                                    request.json.get('text', ''), db, envs)
         return nlsql_answer, status.HTTP_200_OK
-    loop.close()
     return '', status.HTTP_400_BAD_REQUEST
 
